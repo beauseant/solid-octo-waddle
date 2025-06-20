@@ -1,11 +1,9 @@
 import argparse
 import os
 import pandas as pd
-#import fitz  # PyMuPDF
+import fitz  # PyMuPDF
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
-import PyPDF2
-
 
 class PDFTextExtractor:
     """
@@ -13,10 +11,9 @@ class PDFTextExtractor:
     de rutas, extraer su texto y guardar el resultado en nuevas columnas.
     """
     # Mensajes estandarizados
-    MSG_PDF_ESCANEO = "[AVISO: PDF sin texto extraíble (posiblemente escaneado)]"
+    MSG_PDF_ESCANEO = "[ERROR: PDF sin texto extraíble (posiblemente escaneado)]"
     MSG_NO_EXISTE = "[ERROR: El fichero PDF no existe en la ruta especificada]"
-    MSG_RUTA_INVALIDA = "[ERROR: La ruta al PDF es inválida o no se descargó]"
-    MSG_PDF_TEXTO = '[CORRECTO: El pdf contiene texto]'
+    MSG_RUTA_INVALIDA = "[AVISO: La ruta al PDF es inválida o no se descargó]"
 
     def __init__(self, parquet_path: str):
         """
@@ -72,7 +69,6 @@ class PDFTextExtractor:
         
         # 2. Intentar extraer el texto
         try:
-            '''
             documento = fitz.open(pdf_path)
             
             partes_texto = [page.get_text() for page in documento]
@@ -83,11 +79,9 @@ class PDFTextExtractor:
             # 3. Comprobar si se extrajo texto real
             if not texto_completo.strip():
                 return self.MSG_PDF_ESCANEO
-            '''
-            reader = PyPDF2.PdfReader(pdf_path)
-            hasText = any(page.extract_text() for page in reader.pages)
-            return (self.MSG_PDF_TEXTO if hasText  else  self.MSG_PDF_ESCANEO)
             
+            return texto_completo
+
         except Exception as e:
             return f"[ERROR: No se pudo procesar el PDF - {type(e).__name__}]"
 
@@ -111,7 +105,7 @@ class PDFTextExtractor:
         print(f"Iniciando extracción de texto para {len(self.df)} filas.")
         
         # Usamos ThreadPoolExecutor para paralelizar la lectura de ficheros
-        with ThreadPoolExecutor(max_workers=10) as executor:
+        with ThreadPoolExecutor(max_workers=1) as executor:
             futuros = [executor.submit(self._procesar_fila, fila) for fila in self.df.itertuples()]
             
             for futuro in tqdm(as_completed(futuros), total=len(futuros), desc="Extrayendo texto"):
