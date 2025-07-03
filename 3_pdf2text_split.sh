@@ -12,7 +12,7 @@ fi
 TARGET_DIR="$1"
 
 # El comando a ejecutar (por defecto 'echo' si no se provee)
-COMMAND_TO_RUN="${2:-python 2_ConvertPDF2Text.py}"
+COMMAND_TO_RUN="${2:-python ConvertPDF2Text.py}"
 
 # Comprueba si el directorio existe
 if [ ! -d "$TARGET_DIR" ]; then
